@@ -153,11 +153,17 @@ public class ShamirSecretSharing {
 	}
 
 	public static void main(String[] args) throws IOException {
-		TestCase testCase1 = parseTestCase("test1.json");
-		BigInteger secret1 = findSecret(testCase1.points, testCase1.k);
-		System.out.println("Secret for test1.json: " + secret1);
-		TestCase testCase2 = parseTestCase("test2.json");
-		BigInteger secret2 = findSecret(testCase2.points, testCase2.k);
-		System.out.println("Secret for test2.json: " + secret2);
+		List<String> files = new ArrayList<>();
+		if (args != null && args.length > 0) {
+			files.addAll(Arrays.asList(args));
+		} else {
+			files.add("test1.json");
+			files.add("test2.json");
+		}
+		for (String file : files) {
+			TestCase tc = parseTestCase(file);
+			BigInteger secret = findSecret(tc.points, tc.k);
+			System.out.println("Secret for " + file + ": " + secret);
+		}
 	}
 }
