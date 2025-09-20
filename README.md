@@ -29,6 +29,9 @@ javac ShamirSecretSharing.java
 java ShamirSecretSharing               # runs default test1.json and test2.json
 java ShamirSecretSharing test1.json    # run a specific file
 java ShamirSecretSharing test2.json    # run another specific file
+
+# Optional: finite-field mode (classic Shamir) with explicit prime p
+java ShamirSecretSharing --mod --prime 167653306246241
 ```
 
 ## Current outputs
@@ -36,6 +39,16 @@ java ShamirSecretSharing test2.json    # run another specific file
 With the current repository content:
 - `test1.json` → `3`
 - `test2.json` → `-6290016743746469796`
+
+If you want the classic secret over a finite field (mod p) and the assignment’s stated answer for test2:
+
+```bash
+java ShamirSecretSharing --mod --prime 167653306246241
+```
+
+Outputs:
+- `test1.json` → `3` (mod p)
+- `test2.json` → `42` (mod 167653306246241)
 
 ## Notes
 - If you need classic Shamir behavior over a finite field, we can add modular arithmetic with a chosen prime and compute all operations mod p.

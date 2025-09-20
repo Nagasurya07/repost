@@ -152,18 +152,79 @@ public class ShamirSecretSharing {
 		return sum.toIntegerExact();
 	}
 
+	// Modular (finite field) variant of secret reconstruction: f(0) mod p
+	public static BigInteger findSecretMod(List<Point> points, int k, BigInteger p) {
+		if (points.size() < k) throw new IllegalArgumentException("Not enough points");
+		List<Point> selectedPoints = points.subList(0, k);
+		BigInteger sum = BigInteger.ZERO;
+		for (int i = 0; i < selectedPoints.size(); i++) {
+			Point pi = selectedPoints.get(i);
+			BigInteger weight = BigInteger.ONE;
+			for (int j = 0; j < selectedPoints.size(); j++) {
+				if (i == j) continue;
+				Point pj = selectedPoints.get(j);
+				BigInteger num = pj.x.negate().mod(p); // (0 - x_j) mod p
+				BigInteger den = pi.x.subtract(pj.x).mod(p); // (x_i - x_j) mod p
+				// multiply by num * inv(den) mod p
+				weight = weight.multiply(num).mod(p)
+						.multiply(den.modInverse(p)).mod(p);
+			}
+			BigInteger term = pi.y.mod(p).multiply(weight).mod(p);
+			sum = sum.add(term).mod(p);
+		}
+		return sum.mod(p);
+	}
+
+	private static BigInteger choosePrimeAbove(List<Point> points) {
+		BigInteger max = BigInteger.ZERO;
+		for (Point pt : points) {
+			if (pt.x.compareTo(max) > 0) max = pt.x;
+			if (pt.y.compareTo(max) > 0) max = pt.y;
+		}
+		// ensure prime > max by some margin
+		BigInteger candidate = max.add(BigInteger.valueOf(100));
+		return candidate.nextProbablePrime();
+	}
+
 	public static void main(String[] args) throws IOException {
+		boolean useMod = false;
+		BigInteger pOverride = null;
 		List<String> files = new ArrayList<>();
 		if (args != null && args.length > 0) {
-			files.addAll(Arrays.asList(args));
-		} else {
+			for (int idx = 0; idx < args.length; idx++) {
+				String a = args[idx];
+				if ("--mod".equals(a) || "-m".equals(a)) {
+					useMod = true;
+				} else if (a.startsWith("--prime=")) {
+					String val = a.substring("--prime=".length());
+					pOverride = new BigInteger(val);
+					useMod = true;
+				} else if ("--prime".equals(a) || "-p".equals(a)) {
+					if (idx + 1 < args.length) {
+						pOverride = new BigInteger(args[++idx]);
+						useMod = true;
+					} else {
+						throw new IllegalArgumentException("--prime requires a numeric argument");
+					}
+				} else {
+					files.add(a);
+				}
+			}
+		}
+		if (files.isEmpty()) {
 			files.add("test1.json");
 			files.add("test2.json");
 		}
 		for (String file : files) {
 			TestCase tc = parseTestCase(file);
-			BigInteger secret = findSecret(tc.points, tc.k);
-			System.out.println("Secret for " + file + ": " + secret);
+			if (!useMod) {
+				BigInteger secret = findSecret(tc.points, tc.k);
+				System.out.println("Secret for " + file + ": " + secret);
+			} else {
+				BigInteger p = (pOverride != null) ? pOverride : choosePrimeAbove(tc.points);
+				BigInteger secret = findSecretMod(tc.points, tc.k, p);
+				System.out.println("Secret (mod p) for " + file + ": " + secret + "  where p=" + p);
+			}
 		}
 	}
 }
