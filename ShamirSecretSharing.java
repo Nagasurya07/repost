@@ -223,7 +223,7 @@ public class ShamirSecretSharing {
 			} else {
 				BigInteger p = (pOverride != null) ? pOverride : choosePrimeAbove(tc.points);
 				BigInteger secret = findSecretMod(tc.points, tc.k, p);
-				System.out.println("Secret for " + file + ": " + secret);
+				System.out.println("Secret (mod p) for " + file + ": " + secret + "  where p=" + p);
 			}
 		}
 	}
