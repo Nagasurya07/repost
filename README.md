@@ -3,8 +3,8 @@
 This repository contains a Java solution for reconstructing the secret (f(0)) from Shamir's Secret Sharing points provided in JSON format.
 
 Inputs are provided as JSON files with:
-- `keys.n`: number of points available
-- `keys.k`: threshold (minimum points needed, where k = degree + 1)
+ `keys.n`: number of points available
+`keys.k`: threshold (minimum points needed, where k = degree + 1)
 - Each root as an object keyed by its x-coordinate, with `base` and `value` strings. Example:
 
 ```
